@@ -5,7 +5,7 @@ const AppError = require("../utils/AppError");
 class MovieNotesController {
     async create(request, response){
         const { title, description, rating, tags } = request.body
-        const { user_id } = request.params
+        const user_id = request.user.id
 
         
         if (rating > 5 || rating < 1) {
@@ -36,51 +36,60 @@ class MovieNotesController {
     async show(request, response){
         const { id } = request.params;
 
-        console.log("oi")
-
         const note = await knex("movie_notes").where({id}).first();
-        const tags = await knex("tags").where({note_id:id}).orderBy("name");
+        const movieNotesTag = await knex("tags").where({note_id:id}).orderBy("name");
 
-        response.json({
+        return response.json({
             ...note,
-            tags
+            movieNotesTag
         })
     }
 
     async index(request, response){
-        const {title, user_id, tags, rating} = request.query
-
-        let notes;
-
-        if(tags){
-            console.log("ola")
-            const filterByTag = tags.split(',').map(tag => tag.trim());
-            console.log(filterByTag)
-            notes = await knex("tags") //primeira tabel do innerJoin
+        const {title, tags, rating} = request.query
+        const user_id = request.user.id
+        
+        const notes = await knex("tags") //primeira tabel do innerJoin
             .select([
                 "movie_notes.id",
                 "movie_notes.title",
+                "movie_notes.description",
                 "movie_notes.user_id",
                 "movie_notes.rating"
             ])
             .where("movie_notes.user_id", user_id)
             .whereLike("movie_notes.title", `%${title}%`)
-            .whereLike("movie_notes.rating", `%${rating}%`)
-            .whereLike("name", `%${filterByTag}%`)
-            .innerJoin("movie_notes", "tags.note_id", "movie_notes.id") //segunda tabela do innerJoin, variavel relacionada 1, variavel relacionada 2
-        } else {
-            if(rating) {
-                notes = await knex("movie_notes")
-                .where({user_id})
-                .where("rating", rating)
-                .orderBy("rating")
-            } else {
-            notes = await knex("movie_notes")
-            .where({user_id})
-            .whereLike("title", `%${title}`)
-            .orderBy("name")
-            }
-        }
+            .innerJoin("movie_notes", "tags.note_id", "movie_notes.id")
+            .groupBy("movie_notes.id")
+            .orderBy("movie_notes.title")
+
+        // if(tags){
+        //     const filterByTag = tags.split(',').map(tag => tag.trim());
+            
+            // notes = await knex("tags") //primeira tabel do innerJoin
+            // .select([
+            //     "movie_notes.id",
+            //     "movie_notes.title",
+            //     "movie_notes.user_id",
+            //     "movie_notes.rating"
+            // ])
+            // .where("movie_notes.user_id", user_id)
+            // .whereLike("movie_notes.title", `%${title}%`)
+            // .whereLike("movie_notes.rating", `%${rating}%`)
+            // .whereLike("name", `%${filterByTag}%`)
+            // .innerJoin("movie_notes", "tags.note_id", "movie_notes.id") //segunda tabela do innerJoin, variavel relacionada 1, variavel relacionada 2
+        // } else {
+        //     if(rating) {
+        //         notes = await knex("movie_notes")
+        //         .where({user_id})
+        //         .where("rating", rating)
+        //         .orderBy("rating")
+        //     } else {
+        //     notes = await knex("movie_notes")
+        //     .where({ user_id })
+        //     console.log(notes)
+        //     }
+        // }
 
         const userTag = await knex("tags").where({user_id})
         const movieNotesWithTags = notes.map(note => {

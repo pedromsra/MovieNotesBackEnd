@@ -27,21 +27,17 @@ class UsersController {
     async update(request, response) {
         const {name, email, password, oldPassword} = request.body
 
-        const {id} = request.params
+        const user_id = request.user.id
 
         //checar se o novo email já existe em algum outro usuário
-
-        const user = await knex("users").where({id}).first() //só retorna 1
+        const user = await knex("users").where({id: user_id}).first() //só retorna 1
 
         if (!user) {
             throw new AppError("Usuário não encontrado")
         }
-
-        const checkEmail = await knex("users").where({email}).first() //só retorna 1
         
-        console.log(user.email)
-        console.log(checkEmail)
-
+        
+        const checkEmail = await knex("users").where({email}).first() //só retorna 1
         if(checkEmail && checkEmail.id !== user.id) {
             throw new AppError("Email já cadastrado por outro usuário")
         }
@@ -58,9 +54,6 @@ class UsersController {
 
 
         if(password && oldPassword){
-            console.log(user.password);
-            console.log(oldPassword);
-            console.log(password)
             const checkOldPassword = await compare(oldPassword, user.password);
             if (!checkOldPassword){
                 throw new AppError("A sua senha antiga não confere com a senha informada")
@@ -70,7 +63,7 @@ class UsersController {
         }
 
         await knex("users")
-        .where({id})
+        .where({id: user_id})
         .update({
             name: user.name,
             email: user.email,
@@ -83,7 +76,7 @@ class UsersController {
     }
 
     async delete(request, response) {
-        const {id} = request.params
+        const user_id = request.user.id
 
         await knex("users").where({id}).delete()
 
