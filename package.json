@@ -1,19 +1,20 @@
 {
   "name": "movienotes",
   "version": "1.0.0",
+  "description": "Desafio 8 Explorer(Módulo 8)",
   "main": "index.js",
   "scripts": {
-    "start": "node ./src/server.js",
+    "start": "pm2-runtime start ecosystem.config.js --env production",
     "dev": "nodemon ./src/server.js",
     "migrate": "knex migrate:latest"
   },
   "author": "Pedro de Araujo",
   "license": "ISC",
-  "description": "Desafio 8 Explorer(Módulo 8)",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^8.0.1",
     "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-async-errors": "^3.1.1",
     "jsonwebtoken": "^9.0.0",
@@ -23,6 +24,7 @@
     "mysql2": "^3.0.1",
     "oracledb": "^5.5.0",
     "pg": "^8.8.0",
+    "pm2": "^5.2.2",
     "sqlite3": "^5.1.4",
     "tedious": "^15.1.2"
   },
