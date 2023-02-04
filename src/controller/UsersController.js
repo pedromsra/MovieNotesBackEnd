@@ -29,7 +29,6 @@ class UsersController {
         const {name, email, password, oldPassword} = request.body
 
         const user_id = request.user.id
-        console.log(user_id)
 
         //checar se o novo email já existe em algum outro usuário
         const user = await knex('users').where({id: user_id}).first() //só retorna 1
